@@ -1,36 +1,54 @@
 <script>
-	import { gotoManager } from '$lib/utils/helper';
-  	import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
-	import { Icon } from '@smui/icon-button';
-	import RosterRow from "./RosterRow.svelte"
-	
-	export let roster, leagueTeamManagers, startersAndReserve, players, rosterPositions, division, expanded;
+	import { gotoManager } from "$lib/utils/helper";
+	import DataTable, { Head, Body, Row, Cell } from "@smui/data-table";
+	import { Icon } from "@smui/icon-button";
+	import RosterRow from "./RosterRow.svelte";
 
-	$: team = leagueTeamManagers.teamManagersMap[leagueTeamManagers.currentSeason][roster.roster_id].team;
+	export let roster,
+		leagueTeamManagers,
+		startersAndReserve,
+		players,
+		rosterPositions,
+		division,
+		expanded;
+
+	$: team =
+		leagueTeamManagers.teamManagersMap[leagueTeamManagers.currentSeason][
+			roster.roster_id
+		].team;
 
 	let i = 0;
 
-	const digestData = (passedPlayers, rawPlayers, startingPlayers = false, reserve = false) => {
+	const digestData = (
+		passedPlayers,
+		rawPlayers,
+		startingPlayers = false,
+		reserve = false
+	) => {
 		let digestedRoster = [];
-	
-		for(const singlePlayer of rawPlayers) {
-			if(!startingPlayers && !reserve && startersAndReserve.includes(singlePlayer)) {
+
+		for (const singlePlayer of rawPlayers) {
+			if (
+				!startingPlayers &&
+				!reserve &&
+				startersAndReserve.includes(singlePlayer)
+			) {
 				continue;
 			}
 			let player = {};
-			let slot = "BN"
-			if(startingPlayers) {
+			let slot = "BN";
+			if (startingPlayers) {
 				slot = rosterPositions[i] == "WRRB_FLEX" ? "WR/RB" : rosterPositions[i];
 			}
 
-			if(singlePlayer == "0") {
+			if (singlePlayer == "0") {
 				player = {
 					name: "Empty",
 					poss: null,
 					team: null,
 					avatar: null,
-					slot: slot
-				}
+					slot: slot,
+				};
 				i++;
 				digestedRoster.push(player);
 				continue;
@@ -50,40 +68,48 @@
 				case "IR":
 					injury = "IR";
 					break;
-			
+
 				default:
 					break;
 			}
 			player = {
-				name: `${passedPlayers[singlePlayer].fn} ${passedPlayers[singlePlayer].ln}${injury ? `<span class="injury ${injury}">${injury}</span>` : ""}`,
-                nickname: roster.metadata && roster.metadata[`p_nick_${singlePlayer}`] ? roster.metadata[`p_nick_${singlePlayer}`] : null,
+				name: `${passedPlayers[singlePlayer].fn} ${
+					passedPlayers[singlePlayer].ln
+				}${injury ? `<span class="injury ${injury}">${injury}</span>` : ""}`,
+				nickname:
+					roster.metadata && roster.metadata[`p_nick_${singlePlayer}`]
+						? roster.metadata[`p_nick_${singlePlayer}`]
+						: null,
 				poss: passedPlayers[singlePlayer].pos,
 				team: passedPlayers[singlePlayer].t,
-				avatar: passedPlayers[singlePlayer].pos == "DEF" ? `background-image: url(https://sleepercdn.com/images/team_logos/nfl/${singlePlayer.toLowerCase()}.png)` : `background-image: url(https://sleepercdn.com/content/nfl/players/thumb/${singlePlayer}.jpg), url(https://sleepercdn.com/images/v2/icons/player_default.webp)`,
-				slot: slot
-			}
+				avatar:
+					passedPlayers[singlePlayer].pos == "DEF"
+						? `background-image: url(https://sleepercdn.com/images/team_logos/nfl/${singlePlayer.toLowerCase()}.png)`
+						: `background-image: url(https://sleepercdn.com/content/nfl/players/thumb/${singlePlayer}.jpg), url(https://sleepercdn.com/images/v2/icons/player_default.webp)`,
+				slot: slot,
+			};
 			i++;
 			digestedRoster.push(player);
 		}
 		i = 0;
 
 		return digestedRoster;
-	}
+	};
 
 	$: finalStarters = digestData(players, roster.starters, true);
 	let finalBench = [];
-	$: if(roster.players) {
+	$: if (roster.players) {
 		finalBench = digestData(players, roster.players);
 	}
 	let finalIR = null;
-	if(roster.reserve) {
+	if (roster.reserve) {
 		finalIR = digestData(players, roster.reserve, false, true);
 	}
 
 	const buildRecord = (newRoster) => {
 		const innerRecord = [];
 		// Check to make sure that record exists
-		if(!newRoster.metadata || !newRoster.metadata.record) return innerRecord;
+		if (!newRoster.metadata || !newRoster.metadata.record) return innerRecord;
 		// simplify record
 		for (const c of newRoster.metadata.record) {
 			switch (c) {
@@ -93,14 +119,14 @@
 				case "L":
 					innerRecord.push("red");
 					break;
-			
+
 				default:
 					innerRecord.push("gray");
 					break;
 			}
 		}
 		return innerRecord;
-	}
+	};
 
 	$: record = buildRecord(roster);
 
@@ -109,7 +135,7 @@
 	const toggleSelected = () => {
 		selected = selected == "0px" ? calcHeight() + "px" : "0px";
 		status = status == "minimized" ? "expanded" : "minimized";
-	}
+	};
 
 	let innerWidth;
 
@@ -117,27 +143,111 @@
 		const multiplier = 52;
 		const benchLength = finalBench.length * multiplier + 53;
 		let irLength = 0;
-		if(finalIR) {
+		if (finalIR) {
 			irLength = finalIR.length * multiplier + 52;
 		}
 		return benchLength + irLength;
-	}
+	};
 
 	$: {
 		selected = expanded ? calcHeight() + "px" : "0px";
 		status = expanded ? "expanded" : "minimized";
 	}
-
 </script>
 
-<svelte:window bind:innerWidth={innerWidth} />
+<svelte:window bind:innerWidth />
+
+<div class="team">
+	<DataTable
+		class="teamInner"
+		table$aria-label="Team Name"
+		style="width: {innerWidth * 0.95 > 380 ? 380 : innerWidth * 0.95}px;"
+	>
+		<Head>
+			<!-- Team name  -->
+			<Row>
+				<Cell colspan="4" class="r_{division} clickable">
+					<h3
+						on:click={() =>
+							gotoManager({
+								leagueTeamManagers,
+								rosterID: roster.roster_id,
+								managersObj: managers,
+							})}
+					>
+						<img
+							alt="team avatar"
+							class="teamAvatar"
+							src={team
+								? team.avatar
+								: "https://sleepercdn.com/images/v2/icons/player_default.webp"}
+						/>
+						{team?.name ? team.name : "No Manager"}
+					</h3>
+
+					<div class="record">
+						{#each record as result}
+							<img alt="match result" class="result" src="/{result}.png" />
+						{/each}
+					</div>
+				</Cell>
+			</Row>
+		</Head>
+		<Body>
+			<!-- 	Starters	 -->
+			{#each finalStarters as starter}
+				<RosterRow player={starter} />
+			{/each}
+			<Row class="interactive" on:click={toggleSelected}>
+				<Cell colspan="4" class={division}
+					><h5>
+						<Icon class="material-icons icon">king_bed</Icon> Bench
+						<span class="italic">({status})</span>
+					</h5></Cell
+				>
+			</Row>
+		</Body>
+	</DataTable>
+	<div class="rosterBench" style="max-height: {selected}">
+		<DataTable class="teamInner" style="width: 380px">
+			<Body class="bench">
+				<!-- 	Bench	 -->
+				{#each finalBench as bench}
+					<RosterRow player={bench} />
+				{/each}
+
+				<!-- 	IR	 -->
+				{#if finalIR}
+					<Row>
+						<Cell colspan="4"
+							><h5>
+								<Icon class="material-icons icon">healing</Icon> Injured Reserve
+							</h5></Cell
+						>
+					</Row>
+					{#each finalIR as ir}
+						<RosterRow player={ir} />
+					{/each}
+				{/if}
+				<Row class="interactive" on:click={toggleSelected}>
+					<Cell colspan="4" class={division}
+						><h5>
+							<Icon class="material-icons icon">close_fullscreen</Icon>Close
+							Bench
+						</h5></Cell
+					>
+				</Row>
+			</Body>
+		</DataTable>
+	</div>
+</div>
 
 <style>
 	h5 {
-    text-align: center;
+		text-align: center;
 		margin: 0.2em auto;
 	}
-	
+
 	.teamAvatar {
 		vertical-align: middle;
 		border-radius: 50%;
@@ -155,12 +265,13 @@
 	}
 
 	:global(.teamInner) {
-		box-shadow: 0px 3px 3px -2px var(--boxShadowOne), 0px 3px 4px 0px var(--boxShadowTwo), 0px 1px 8px 0px var(--boxShadowThree);
+		box-shadow: 0px 3px 3px -2px var(--boxShadowOne),
+			0px 3px 4px 0px var(--boxShadowTwo), 0px 1px 8px 0px var(--boxShadowThree);
 		display: block;
-	    margin: 0 auto;
+		margin: 0 auto;
 	}
 
-	.rosterBench{
+	.rosterBench {
 		overflow: hidden;
 		width: 100%;
 		display: block;
@@ -257,56 +368,3 @@
 		background-color: var(--ir);
 	}
 </style>
-
-<div class="team">
-	<DataTable class="teamInner" table$aria-label="Team Name" style="width: {innerWidth * 0.95 > 380 ? 380 : innerWidth * 0.95}px;" >
-		<Head> <!-- Team name  -->
-			<Row>
-				<Cell colspan=4 class="r_{division} clickable">
-					<h3 on:click={() => gotoManager({leagueTeamManagers, rosterID: roster.roster_id})}>
-						<img alt="team avatar" class="teamAvatar" src="{team ? team.avatar : 'https://sleepercdn.com/images/v2/icons/player_default.webp'}" />
-						{team?.name ? team.name : 'No Manager'}
-					</h3>
-
-					<div class="record">
-						{#each record as result}
-							<img alt="match result" class="result" src="/{result}.png" />
-						{/each}
-					</div>
-				</Cell>
-			</Row>
-		</Head>
-		<Body>
-			<!-- 	Starters	 -->
-			{#each finalStarters as starter}
-				<RosterRow player={starter} />
-			{/each}
-			<Row class="interactive" on:click={toggleSelected}>
-				<Cell colspan=4 class="{division}"><h5><Icon class="material-icons icon">king_bed</Icon> Bench <span class="italic">({status})</span></h5></Cell>
-			</Row>
-		</Body>
-	</DataTable>
-	<div class="rosterBench" style="max-height: {selected}">
-		<DataTable class="teamInner" style="width: 380px" >
-			<Body class="bench">
-				<!-- 	Bench	 -->
-				{#each finalBench as bench}
-					<RosterRow player={bench} />
-				{/each}
-				
-				<!-- 	IR	 -->
-				{#if finalIR}
-					<Row>
-					<Cell colspan=4 ><h5><Icon class="material-icons icon">healing</Icon> Injured Reserve</h5></Cell>
-					</Row>
-					{#each finalIR as ir}
-						<RosterRow player={ir} />
-					{/each}
-				{/if}
-				<Row class="interactive" on:click={toggleSelected}>
-					<Cell colspan=4 class="{division}"><h5><Icon class="material-icons icon">close_fullscreen</Icon>Close Bench</h5></Cell>
-				</Row>
-			</Body>
-		</DataTable>
-	</div>
-</div>

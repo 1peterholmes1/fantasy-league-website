@@ -1,7 +1,18 @@
 <script>
-	import BarChart from '$lib/BarChart.svelte';
-    import { generateGraph, getTeamFromTeamManagers, round, predictScores, loadPlayers } from '$lib/utils/helper';
-    export let nflState, rostersData, leagueTeamManagers, playersInfo, leagueData;
+    import BarChart from "$lib/BarChart.svelte";
+    import {
+        generateGraph,
+        getTeamFromTeamManagers,
+        round,
+        predictScores,
+        loadPlayers,
+        getManagersData,
+    } from "$lib/utils/helper";
+    export let nflState,
+        rostersData,
+        leagueTeamManagers,
+        playersInfo,
+        leagueData;
 
     const rosters = rostersData.rosters;
 
@@ -14,49 +25,55 @@
     const buildRankings = () => {
         const rosterPowers = [];
         let week = nflState.week;
-        if(week == 0) {
+        if (week == 0) {
             week = 1;
         }
         let max = 0;
 
-        for(const rosterID in rosters) {
+        for (const rosterID in rosters) {
             const roster = rosters[rosterID];
             // make sure the roster has players on it
-            if(!roster.players) continue;
+            if (!roster.players) continue;
             // if at least one team has players, create the graph
             validGraph = true;
 
             const rosterPlayers = [];
 
-            for(const rosterPlayer of roster.players) {
-                if(!players[rosterPlayer]) contnue;
+            for (const rosterPlayer of roster.players) {
+                if (!players[rosterPlayer]) contnue;
                 rosterPlayers.push({
                     name: players[rosterPlayer].ln,
                     pos: players[rosterPlayer].pos,
-                    wi: players[rosterPlayer].wi
-                })
+                    wi: players[rosterPlayer].wi,
+                });
             }
 
             const rosterPower = {
                 rosterID,
                 manager: getTeamFromTeamManagers(leagueTeamManagers, rosterID),
                 powerScore: 0,
-            }
+            };
             const seasonEnd = 18;
-            if(week >= seasonEnd) {
+            if (week >= seasonEnd) {
                 seasonOver = true;
             }
-            for(let i = week; i < seasonEnd; i++) {
-                rosterPower.powerScore += predictScores(rosterPlayers, i, leagueData);
+            for (let i = week; i < seasonEnd; i++) {
+                rosterPower.powerScore += predictScores(
+                    rosterPlayers,
+                    i,
+                    leagueData
+                );
             }
-            if(rosterPower.powerScore > max) {
+            if (rosterPower.powerScore > max) {
                 max = rosterPower.powerScore;
             }
             rosterPowers.push(rosterPower);
         }
 
-        for(const rosterPower of rosterPowers) {
-            rosterPower.powerScore = round(rosterPower.powerScore/max * 100);
+        for (const rosterPower of rosterPowers) {
+            rosterPower.powerScore = round(
+                (rosterPower.powerScore / max) * 100
+            );
         }
 
         const powerGraph = {
@@ -66,13 +83,11 @@
             stat: "",
             header: "Rest of Season Power Rankings",
             field: "powerScore",
-            short: "ROS Power Ranking"
+            short: "ROS Power Ranking",
         };
 
-        graphs = [
-            generateGraph(powerGraph, leagueData.season),
-        ]
-    }
+        graphs = [generateGraph(powerGraph, leagueData.season)];
+    };
 
     let players = playersInfo.players;
 
@@ -82,15 +97,24 @@
         const newPlayersInfo = await loadPlayers(null, true);
         players = newPlayersInfo.players;
         buildRankings();
-    }
+    };
 
-    if(playersInfo.stale) {
+    let managersData = getManagersData();
+
+    if (playersInfo.stale) {
         refreshPlayers();
     }
 
     let curGraph = 0;
-
 </script>
+
+{#await managersData then managers}
+    {#if validGraph && !seasonOver}
+        <div class="enclosure">
+            <BarChart {graphs} bind:curGraph {leagueTeamManagers} {managers} />
+        </div>
+    {/if}
+{/await}
 
 <style>
     .enclosure {
@@ -100,8 +124,3 @@
     }
 </style>
 
-{#if validGraph && !seasonOver}
-    <div class="enclosure">
-        <BarChart {graphs} bind:curGraph={curGraph} {leagueTeamManagers} />
-    </div>
-{/if}

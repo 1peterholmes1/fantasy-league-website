@@ -1,18 +1,113 @@
 <script>
-	import { gotoManager } from '$lib/utils/helper';
-	import { getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
+    import { gotoManager } from "$lib/utils/helper";
+    import { getTeamFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
 
-	export let transaction, players, leagueTeamManagers;
+    export let transaction, players, leagueTeamManagers, managers;
 
     const owner = transaction.rosters[0];
 
     const getAvatar = (pos, player) => {
-        if(pos == 'DEF') {
+        if (pos == "DEF") {
             return `background-image: url(https://sleepercdn.com/images/team_logos/nfl/${player.toLowerCase()}.png)`;
         }
         return `background-image: url(https://sleepercdn.com/content/nfl/players/thumb/${player}.jpg), url(https://sleepercdn.com/images/v2/icons/player_default.webp)`;
-    }
+    };
 </script>
+
+<div
+    class="waiverTransaction clickable"
+    on:click={() =>
+        gotoManager({
+            year: transaction.season,
+            leagueTeamManagers,
+            rosterID: owner,
+            managersObj: managers,
+        })}
+>
+    <div class="name">
+        <span class="ownerName">
+            {getTeamFromTeamManagers(
+                leagueTeamManagers,
+                owner,
+                transaction.season
+            ).name}
+            {#if getTeamFromTeamManagers(leagueTeamManagers, owner, transaction.season).name != getTeamFromTeamManagers(leagueTeamManagers, owner).name}
+                <span class="currentOwner"
+                    >({getTeamFromTeamManagers(leagueTeamManagers, owner)
+                        .name})</span
+                >
+            {/if}
+            {#if transaction.moves[0][0].bid}
+                <span class="bid">
+                    - {transaction.moves[0][0].bid}$
+                </span>
+            {/if}
+        </span>
+        <img
+            class="avatar"
+            src={getTeamFromTeamManagers(
+                leagueTeamManagers,
+                owner,
+                transaction.season
+            ).avatar}
+            alt="{getTeamFromTeamManagers(
+                leagueTeamManagers,
+                owner,
+                transaction.season
+            ).name} avatar"
+        />
+    </div>
+    <div class="core">
+        <div class="avatarAndDetails">
+            <div class="details">
+                {#each transaction.moves as move}
+                    <div class="player">
+                        <div
+                            class="playerAvatar"
+                            style="border-color: var(--{players[move[0].player]
+                                .pos}); background-color: var(--{move[0].type ==
+                            'Added'
+                                ? 'waiverAdd'
+                                : 'waiverDrop'}); {getAvatar(
+                                players[move[0].player].pos,
+                                move[0].player
+                            )}"
+                        >
+                            {#if move[0].type == "Added"}
+                                <i
+                                    class="add indicator material-icons"
+                                    aria-hidden="true">add_circle</i
+                                >
+                            {:else if move[0].type == "Dropped"}
+                                <i
+                                    class="drop indicator material-icons"
+                                    aria-hidden="true">do_not_disturb_on</i
+                                >
+                            {/if}
+                        </div>
+                        <span class="nameHolder">
+                            <span class="playerName"
+                                >{`${players[move[0].player].fn} ${
+                                    players[move[0].player].ln
+                                }`}</span
+                            >
+                            <span class="playerInfo">
+                                <span>{players[move[0].player].pos}</span>
+                                {#if players[move[0].player].t}
+                                    -
+                                    <span>{players[move[0].player].t}</span>
+                                {/if}
+                            </span>
+                        </span>
+                    </div>
+                {/each}
+            </div>
+        </div>
+        <span class="date">
+            {transaction.date}
+        </span>
+    </div>
+</div>
 
 <style>
     .waiverTransaction {
@@ -20,7 +115,7 @@
         flex-direction: column;
         margin-bottom: 1em;
     }
-    
+
     .name {
         position: relative;
     }
@@ -160,50 +255,3 @@
         }
     }
 </style>
-
-<div class="waiverTransaction clickable" on:click={() => gotoManager({year: transaction.season, leagueTeamManagers, rosterID: owner})}>
-    <div class="name">
-        <span class="ownerName">
-            {getTeamFromTeamManagers(leagueTeamManagers, owner, transaction.season).name}
-            {#if getTeamFromTeamManagers(leagueTeamManagers, owner, transaction.season).name != getTeamFromTeamManagers(leagueTeamManagers, owner).name}
-                <span class="currentOwner">({getTeamFromTeamManagers(leagueTeamManagers, owner).name})</span>
-            {/if}
-            {#if transaction.moves[0][0].bid}
-                <span class="bid">
-                    - {transaction.moves[0][0].bid}$
-                </span>
-            {/if}
-        </span>
-        <img class="avatar" src="{getTeamFromTeamManagers(leagueTeamManagers, owner, transaction.season).avatar}" alt="{getTeamFromTeamManagers(leagueTeamManagers, owner, transaction.season).name} avatar"/>
-    </div>
-    <div class="core">
-        <div class="avatarAndDetails">
-            <div class="details">
-                {#each transaction.moves as move}
-                    <div class="player">
-                        <div class="playerAvatar" style="border-color: var(--{players[move[0].player].pos}); background-color: var(--{move[0].type == "Added" ? "waiverAdd" : "waiverDrop"}); {getAvatar(players[move[0].player].pos, move[0].player)}">
-                            {#if move[0].type == "Added"}
-                                <i class="add indicator material-icons" aria-hidden="true">add_circle</i>
-                            {:else if move[0].type == "Dropped"}
-                                <i class="drop indicator material-icons" aria-hidden="true">do_not_disturb_on</i>
-                            {/if}
-                        </div>
-                        <span class="nameHolder">
-                            <span class="playerName">{`${players[move[0].player].fn} ${players[move[0].player].ln}`}</span>
-                            <span class="playerInfo">
-                                <span>{players[move[0].player].pos}</span>
-                                {#if players[move[0].player].t}
-                                    -
-                                    <span>{players[move[0].player].t}</span> 
-                                {/if}
-                            </span>
-                        </span>
-                    </div>
-                {/each}
-            </div>
-        </div>
-        <span class="date">
-            {transaction.date}
-        </span>
-    </div>
-</div>

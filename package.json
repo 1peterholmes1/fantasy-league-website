@@ -67,6 +67,7 @@
   },
   "type": "module",
   "dependencies": {
+    "@sanity/client": "^6.4.12",
     "@smui/button": "6.0.0-beta.13",
     "@smui/data-table": "6.0.0-beta.13",
     "@smui/dialog": "6.0.0-beta.13",

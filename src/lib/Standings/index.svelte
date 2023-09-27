@@ -1,52 +1,119 @@
 <script>
-    import { leagueName, round } from '$lib/utils/helper';
-	import { getTeamFromTeamManagers } from '$lib/utils/helperFunctions/universalFunctions';
-  	import DataTable, { Head, Body, Row, Cell } from '@smui/data-table';
-	import LinearProgress from '@smui/linear-progress';
-    import { onMount } from 'svelte';
-    import Standing from './Standing.svelte';
+    import { leagueName, round } from "$lib/utils/helper";
+    import { getTeamFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
+    import DataTable, { Head, Body, Row, Cell } from "@smui/data-table";
+    import LinearProgress from "@smui/linear-progress";
+    import { onMount } from "svelte";
+    import Standing from "./Standing.svelte";
 
-    export let standingsData, leagueTeamManagersData;
+    export let standingsData, leagueTeamManagersData, managersData;
 
     // Least important to most important (i.e. the most important [usually wins] goes last)
     // Edit this to match your leagues settings
-    const sortOrder = ["fptsAgainst", "divisionTies", "divisionWins", "fpts", "ties", "wins"];
+    const sortOrder = [
+        "fptsAgainst",
+        "divisionTies",
+        "divisionWins",
+        "fpts",
+        "ties",
+        "wins",
+    ];
 
     // Column order from left to right
-    const columnOrder = [{name: "W", field: "wins"}, {name: "T", field: "ties"}, {name: "L", field: "losses"}, {name: "Div W", field: "divisionWins"}, {name: "Div T", field: "divisionTies"}, {name: "Div L", field: "divisionLosses"}, {name: "FPTS", field: "fpts"}, {name: "FPTS Against", field: "fptsAgainst"}, {name: "Streak", field: "streak"}]
+    const columnOrder = [
+        { name: "W", field: "wins" },
+        { name: "T", field: "ties" },
+        { name: "L", field: "losses" },
+        { name: "Div W", field: "divisionWins" },
+        { name: "Div T", field: "divisionTies" },
+        { name: "Div L", field: "divisionLosses" },
+        { name: "FPTS", field: "fpts" },
+        { name: "FPTS Against", field: "fptsAgainst" },
+        { name: "Streak", field: "streak" },
+    ];
 
     let loading = true;
     let preseason = false;
-    let standings, year, leagueTeamManagers;
+    let standings, year, leagueTeamManagers, managers;
     onMount(async () => {
         const asyncStandingsData = await standingsData;
-        if(!asyncStandingsData) {
+        if (!asyncStandingsData) {
             loading = false;
             preseason = true;
             return;
         }
-        const {standingsInfo, yearData} = asyncStandingsData;
+        const { standingsInfo, yearData } = asyncStandingsData;
         leagueTeamManagers = await leagueTeamManagersData;
+        managers = await managersData;
         year = yearData;
 
-        let finalStandings = Object.keys(standingsInfo).map((key) => standingsInfo[key]);
+        let finalStandings = Object.keys(standingsInfo).map(
+            (key) => standingsInfo[key]
+        );
 
-        for(const sortType of sortOrder) {
-            if(!finalStandings[0][sortType] && finalStandings[0][sortType] != 0) {
+        for (const sortType of sortOrder) {
+            if (
+                !finalStandings[0][sortType] &&
+                finalStandings[0][sortType] != 0
+            ) {
                 continue;
             }
-            finalStandings = [...finalStandings].sort((a,b) => b[sortType] - a[sortType]);
+            finalStandings = [...finalStandings].sort(
+                (a, b) => b[sortType] - a[sortType]
+            );
         }
 
         standings = finalStandings;
         loading = false;
-    })
+    });
 
     let innerWidth;
-
 </script>
 
-<svelte:window bind:innerWidth={innerWidth} />
+<svelte:window bind:innerWidth />
+
+<h1>{year ?? ""} {leagueName} Standings</h1>
+
+{#if loading}
+    <!-- promise is pending -->
+    <div class="loading">
+        <p>Loading Standings...</p>
+        <LinearProgress indeterminate />
+    </div>
+{:else if preseason}
+    <div class="loading">
+        <p>Preseason, No Standings Yet</p>
+    </div>
+{:else}
+    <div class="standingsTable">
+        <DataTable table$aria-label="League Standings">
+            <Head>
+                <!-- Team name  -->
+                <Row>
+                    <Cell class="center">Team</Cell>
+                    {#each columnOrder as column}
+                        <Cell class="center wrappable">{column.name}</Cell>
+                    {/each}
+                </Row>
+            </Head>
+            <Body>
+                <!-- 	Standing	 -->
+                {#each standings as standing}
+                    <Standing
+                        {columnOrder}
+                        {standing}
+                        {leagueTeamManagers}
+                        team={getTeamFromTeamManagers(
+                            leagueTeamManagers,
+                            standing.rosterID
+                        )}
+                        {managers}
+                    />
+                {/each}
+            </Body>
+        </DataTable>
+    </div>
+{/if}
 
 <style>
     .loading {
@@ -77,36 +144,3 @@
         margin: 0.5em 0 5em;
     }
 </style>
-
-<h1>{year ?? ''} {leagueName} Standings</h1>
-
-{#if loading}
-    <!-- promise is pending -->
-    <div class="loading">
-        <p>Loading Standings...</p>
-        <LinearProgress indeterminate />
-    </div>
-{:else if preseason}
-<div class="loading">
-    <p>Preseason, No Standings Yet</p>
-</div>
-{:else}
-    <div class="standingsTable">
-        <DataTable table$aria-label="League Standings" >
-            <Head> <!-- Team name  -->
-                <Row>
-                    <Cell class="center">Team</Cell>
-                    {#each columnOrder as column}
-                        <Cell class="center wrappable">{column.name}</Cell>
-                    {/each}
-                </Row>
-            </Head>
-            <Body>
-                <!-- 	Standing	 -->
-                {#each standings as standing}
-                    <Standing {columnOrder} {standing} {leagueTeamManagers} team={getTeamFromTeamManagers(leagueTeamManagers, standing.rosterID)} />
-                {/each}
-            </Body>
-        </DataTable>
-    </div>
-{/if}

@@ -1,13 +1,13 @@
-import {getLeagueData} from './helperFunctions/leagueData';
-import {dues, leagueID, leagueName, dynasty, managers, homepageText, enableBlog} from './leagueInfo';
-import {getLeagueTransactions} from './helperFunctions/leagueTransactions';
-import {getNflState} from './helperFunctions/nflState';
-import {getLeagueRosters} from './helperFunctions/leagueRosters';
-import {getLeagueTeamManagers} from './helperFunctions/leagueTeamManagers';
-import {getLeagueMatchups} from './helperFunctions/leagueMatchups'
-import {getRivalryMatchups} from './helperFunctions/rivalryMatchups'
-import {getNews, stringDate} from './helperFunctions/news';
-import {loadPlayers} from './helperFunctions/players';
+import { getLeagueData } from './helperFunctions/leagueData';
+import { dues, leagueID, leagueName, dynasty, homepageText, enableBlog } from './leagueInfo';
+import { getLeagueTransactions } from './helperFunctions/leagueTransactions';
+import { getNflState } from './helperFunctions/nflState';
+import { getLeagueRosters } from './helperFunctions/leagueRosters';
+import { getLeagueTeamManagers, getManagersData } from './helperFunctions/leagueTeamManagers';
+import { getLeagueMatchups } from './helperFunctions/leagueMatchups'
+import { getRivalryMatchups } from './helperFunctions/rivalryMatchups'
+import { getNews, stringDate } from './helperFunctions/news';
+import { loadPlayers } from './helperFunctions/players';
 import { waitForAll } from './helperFunctions/multiPromise';
 import { getUpcomingDraft, getPreviousDrafts } from './helperFunctions/leagueDrafts'
 import { getLeagueRecords } from './helperFunctions/leagueRecords'
@@ -22,10 +22,10 @@ export {
     enableBlog,
     homepageText,
     gotoManager,
-    managers,
+    getManagersData,
     getLeagueData,
     getLeagueTransactions,
-    getNflState, 
+    getNflState,
     getLeagueRosters,
     getLeagueTeamManagers,
     getLeagueMatchups,

@@ -1,9 +1,13 @@
 <script>
-	import { Standings } from '$lib/components'
+	import { Standings } from "$lib/components";
 
 	export let data;
-	const {standingsData, leagueTeamManagersData} = data;
+	const { standingsData, leagueTeamManagersData, managersData } = data;
 </script>
+
+<div class="holder">
+	<Standings {standingsData} {leagueTeamManagersData} {managersData} />
+</div>
 
 <style>
 	.holder {
@@ -12,7 +16,3 @@
 		text-align: center;
 	}
 </style>
-
-<div class="holder">
-	<Standings {standingsData} {leagueTeamManagersData} />
-</div>

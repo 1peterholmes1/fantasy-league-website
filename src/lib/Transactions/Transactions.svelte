@@ -1,34 +1,107 @@
 <script>
-	import { goto } from '$app/navigation';
-	import { getLeagueTransactions, getLeagueTeamManagers, loadPlayers, waitForAll } from '$lib/utils/helper';
-	import LinearProgress from '@smui/linear-progress';
-	import { onMount } from 'svelte';
-	import TradeTransaction from './TradeTransaction.svelte';
-	import WaiverTransaction from './WaiverTransaction.svelte';
+	import { goto } from "$app/navigation";
+	import {
+		getLeagueTransactions,
+		getLeagueTeamManagers,
+		loadPlayers,
+		waitForAll,
+		getManagersData,
+	} from "$lib/utils/helper";
+	import LinearProgress from "@smui/linear-progress";
+	import { onMount } from "svelte";
+	import TradeTransaction from "./TradeTransaction.svelte";
+	import WaiverTransaction from "./WaiverTransaction.svelte";
 
 	let loading = true;
 	let players;
 	let transactions;
-    let leagueTeamManagers;
+	let leagueTeamManagers;
+	let managers;
 
 	onMount(async () => {
-		const [transactionsData, playersData, leagueTeamManagersData] = await waitForAll(getLeagueTransactions(true),loadPlayers(null), getLeagueTeamManagers());
+		const [
+			transactionsData,
+			playersData,
+			leagueTeamManagersData,
+			managersData,
+		] = await waitForAll(
+			getLeagueTransactions(true),
+			loadPlayers(null),
+			getLeagueTeamManagers(),
+			getManagersData()
+		);
 		players = playersData.players;
 		transactions = transactionsData.transactions;
-        leagueTeamManagers = leagueTeamManagersData;
+		leagueTeamManagers = leagueTeamManagersData;
+		managers = managersData;
 		loading = false;
 
-		if(transactionsData.stale) {
+		if (transactionsData.stale) {
 			const newTransactions = await getLeagueTransactions(true, true);
 			transactions = newTransactions.transactions;
 		}
 
-		if(playersData.stale) {
+		if (playersData.stale) {
 			const newPlayersData = await loadPlayers(true);
 			players = newPlayersData.players;
 		}
-	})
+	});
 </script>
+
+<div class="transactions">
+	{#if loading}
+		<p>Loading league transactions...</p>
+		<LinearProgress indeterminate />
+	{:else}
+		<!-- waiver -->
+		{#if transactions.waivers.length}
+			<h5>Recent Waiver Moves</h5>
+			{#each transactions.waivers as transaction}
+				<WaiverTransaction
+					{players}
+					{transaction}
+					{leagueTeamManagers}
+					{managers}
+				/>
+			{/each}
+
+			<p
+				on:click={() => goto("/transactions?show=waiver&query=&page=1")}
+				class="link"
+			>
+				( view more )
+			</p>
+		{:else}
+			<p class="nothingYet">No waiver moves have been made yet...</p>
+		{/if}
+
+		{#if transactions.waivers.length && transactions.trades.length}
+			<br />
+		{/if}
+
+		<!-- trades -->
+		{#if transactions.trades.length}
+			<h5>Recent Trades</h5>
+			{#each transactions.trades as transaction}
+				<TradeTransaction
+					{players}
+					{transaction}
+					{leagueTeamManagers}
+					{managers}
+				/>
+			{/each}
+
+			<p
+				on:click={() => goto("/transactions?show=trade&query=&page=1")}
+				class="link"
+			>
+				( view more )
+			</p>
+		{:else}
+			<p class="nothingYet">No trades have been made yet...</p>
+		{/if}
+	{/if}
+</div>
 
 <style>
 	.transactions {
@@ -62,37 +135,3 @@
 	}
 </style>
 
-<div class="transactions">
-	{#if loading}
-		<p>Loading league transactions...</p>
-		<LinearProgress indeterminate />
-	{:else}
-		<!-- waiver -->
-		{#if transactions.waivers.length}
-			<h5>Recent Waiver Moves</h5>
-			{#each transactions.waivers as transaction }
-				<WaiverTransaction {players} {transaction} {leagueTeamManagers} />
-			{/each}
-
-			<p on:click={() => goto("/transactions?show=waiver&query=&page=1")} class="link">( view more )</p>
-		{:else}
-			<p class="nothingYet">No waiver moves have been made yet...</p>
-		{/if}
-
-		{#if transactions.waivers.length && transactions.trades.length}
-			<br />
-		{/if}
-
-		<!-- trades -->
-		{#if transactions.trades.length}
-			<h5>Recent Trades</h5>
-			{#each transactions.trades as transaction }
-				<TradeTransaction {players} {transaction} {leagueTeamManagers} />
-			{/each}
-
-			<p on:click={() => goto("/transactions?show=trade&query=&page=1")} class="link">( view more )</p>
-		{:else}
-			<p class="nothingYet">No trades have been made yet...</p>
-		{/if}
-	{/if}
-</div>
