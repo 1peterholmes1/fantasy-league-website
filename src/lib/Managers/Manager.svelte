@@ -88,11 +88,19 @@
 
 <div class="managerContainer">
     <div class="managerConstrained">
-        <img
-            class="managerPhoto"
-            src={urlForImage(viewManager.image?.asset)}
-            alt="manager"
-        />
+        {#if viewManager.image}
+            <img
+                class="managerPhoto"
+                src={urlForImage(viewManager.image?.asset)}
+                alt="manager"
+            />
+        {:else}
+            <img
+                class="managerPhoto"
+                src="/managers/blankManager.png"
+                alt="manager"
+            />
+        {/if}
         <h2>
             {viewManager.name}
             <div class="teamSub">
