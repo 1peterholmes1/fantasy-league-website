@@ -28,7 +28,11 @@
 
     $: viewManager = managers[manager];
 
-    $: datesActive = getDatesActive(leagueTeamManagers, viewManager.managerID);
+    $: datesActive = getDatesActive(
+        leagueTeamManagers,
+        viewManager.managerID,
+        managers
+    );
 
     const startersAndReserve = rostersData.startersAndReserve;
     let rosters = rostersData.rosters;
@@ -82,6 +86,9 @@
             goto(`/managers`);
         }
         manager = newManager;
+        if (newManager >= managers.length) {
+            manager = managers.map((m) => m.managerID).indexOf(manager);
+        }
         goto(`/manager?manager=${newManager}`, { noscroll });
     };
 </script>

@@ -11,7 +11,7 @@ export const client = createClient({
 const builder = imageUrlBuilder({ projectId: import.meta.env.VITE_SANITY_PROJECT_ID, dataset: import.meta.env.VITE_SANITY_DATASET })
 
 export const fetchManagersData = async () => {
-  const query = '*[_type == "person" && playsFantasy == true]{...,"philosophy": fantasyPhilosophy, "tookOver": fantasyTakeover, "tradingScale": fantasyTradingScale, "mode": fantasyMode}'
+  const query = '*[_type == "person" && playsFantasy == true]{...,"philosophy": fantasyPhilosophy, "tookOver": fantasyTakeover, "tradingScale": fantasyTradingScale, "mode": fantasyMode, fantasyTeamRival->}'
   const managers = await client.fetch(query)
   return managers
 }

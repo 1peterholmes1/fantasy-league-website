@@ -25,7 +25,12 @@
     {#if viewManager.valuePosition}
         <div class="infoSlot">
             <div class="infoLabel">Favorite Fantasy Asset</div>
-            <div class="infoIcon {viewManager.valuePosition}">
+            <div
+                class="infoIcon {viewManager.valuePosition.toUpperCase() ===
+                'D/ST'
+                    ? 'DEF'
+                    : viewManager.valuePosition}"
+            >
                 <span class="valuePosition">{viewManager.valuePosition}</span>
             </div>
         </div>
@@ -96,8 +101,11 @@
             </div>
         </div>
     {:else if viewManager.isCustomFantasyRival == false && viewManager.fantasyTeamRival}
-        <!-- TODO: Change to button -->
-        <div class="infoSlot infoRival" on:click={() => changeManager()}>
+        <button
+            class="infoSlot infoRival"
+            on:click={() =>
+                changeManager(viewManager.fantasyTeamRival?.managerID)}
+        >
             <div class="infoLabel">Rival</div>
             <div class="infoIcon">
                 {#if viewManager.fantasyTeamRival?.image}
@@ -113,7 +121,7 @@
             <div class="infoAnswer">
                 {viewManager.fantasyTeamRival?.name}
             </div>
-        </div>
+        </button>
     {/if}
 </div>
 
@@ -133,6 +141,11 @@
     .infoSlot {
         text-align: center;
         margin: 2em 1em 0;
+    }
+
+    button.infoSlot {
+        border: none;
+        font: inherit;
     }
 
     .infoIcon {

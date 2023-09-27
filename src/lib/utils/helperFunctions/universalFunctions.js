@@ -254,8 +254,13 @@ export const getNestedTeamNamesFromTeamManagers = (teamManagers, year, rosterID)
     return originalName;
 }
 
-export const getDatesActive = (teamManagers, managerID) => {
+export const getDatesActive = (teamManagers, managerID, managers) => {
     if (!managerID) return;
+    if (managers && managers.find(m => m.managerID == managerID)) {
+        let m = managers.find(m => m.managerID == managerID);
+        return { start: m.tookOver, end: null }
+
+    }
     let datesActive = { start: null, end: null };
     const years = Object.keys(teamManagers.teamManagersMap).sort((a, b) => b - a);
     for (const year of years) {
