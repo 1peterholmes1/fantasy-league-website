@@ -40,7 +40,6 @@ const max = (stats, roundOverride) => {
 export const gotoManager = ({ leagueTeamManagers, managerID, rosterID, year, managersObj }) => {
     if (!managersObj) { console.log('no managers passed') }
     if (!managersObj.length) { return }
-    console.log('managersObj passed')
     let managersIndex = -1;
 
     if (!year || year > leagueTeamManagers.currentSeason) {
