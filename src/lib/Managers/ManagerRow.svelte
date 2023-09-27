@@ -1,7 +1,12 @@
 <script>
     import { goto } from "$app/navigation";
-	import { getDatesActive, getRosterIDFromManagerID, getTeamNameFromTeamManagers } from "$lib/utils/helperFunctions/universalFunctions";
-    import {dynasty} from "$lib/utils/leagueInfo"
+    import {
+        getDatesActive,
+        getRosterIDFromManagerID,
+        getTeamNameFromTeamManagers,
+    } from "$lib/utils/helperFunctions/universalFunctions";
+    import { dynasty } from "$lib/utils/leagueInfo";
+    import { urlForImage } from "$lib/utils/sanity";
 
     export let manager, leagueTeamManagers, key;
 
@@ -11,15 +16,116 @@
     let rosterID = manager.roster;
     let year = null;
 
-    if(manager.managerID) {
+    if (manager.managerID) {
         const dates = getDatesActive(leagueTeamManagers, manager.managerID);
-        if(dates.end) retired = true;
+        if (dates.end) retired = true;
 
-        ({rosterID, year} = getRosterIDFromManagerID(leagueTeamManagers, manager.managerID) || {rosterID, year});
+        ({ rosterID, year } = getRosterIDFromManagerID(
+            leagueTeamManagers,
+            manager.managerID
+        ) || { rosterID, year });
     }
 
-    const commissioner = manager.managerID ? leagueTeamManagers.users[manager.managerID].is_owner : false;
+    const commissioner = manager.managerID
+        ? leagueTeamManagers.users[manager.managerID].is_owner
+        : false;
 </script>
+
+<div
+    class="manager"
+    style={retired
+        ? "background-image: url(/retired.png); background-color: var(--ddd)"
+        : ""}
+    on:click={() => goto(`/manager?manager=${key}`)}
+>
+    <div class="avatarHolder">
+        {#if manager.image}
+            <img
+                class="photo"
+                src={urlForImage(manager.image?.asset)}
+                alt={manager.name}
+            />
+        {:else}
+            <img
+                class="photo"
+                src="/managers/blankManager.png"
+                alt={manager.name}
+            />
+        {/if}
+        {#if commissioner}
+            <div class="commissionerBadge">
+                <span>C</span>
+            </div>
+        {/if}
+    </div>
+    <div class="name">{manager.name}</div>
+    <div class="team">
+        {getTeamNameFromTeamManagers(leagueTeamManagers, rosterID, year)}
+    </div>
+    <div class="spacer" />
+    <div class="info">
+        <!-- Favorite team (optional) -->
+        <div class="infoSlot infoTeam">
+            {#if manager.favoriteTeam}
+                <div class="infoIcon">
+                    <img
+                        class="infoImg"
+                        src="https://sleepercdn.com/images/team_logos/nfl/{manager.favoriteTeam}.png"
+                        alt="favorite team"
+                    />
+                </div>
+            {:else}
+                <div class="infoIcon question">
+                    <img
+                        class="infoImg"
+                        src="/managers/question.jpg"
+                        alt="favorite team"
+                    />
+                </div>
+            {/if}
+        </div>
+        <!-- Preferred contact -->
+        {#if manager.preferredContact}
+            <div class="infoSlot">
+                <div class="infoIcon">
+                    <img
+                        class="infoImg"
+                        src="/{manager.preferredContact}.png"
+                        alt={manager.preferredContact}
+                    />
+                </div>
+                <div class="infoAnswer">
+                    {manager.preferredContact}
+                </div>
+            </div>
+        {/if}
+        <!-- Rebuild mode (optional and only displayed for dynasty leagues) -->
+        <!-- {#if dynasty} -->
+        <div class="infoSlot infoRebuild">
+            {#if manager.mode}
+                <div class="infoIcon">
+                    <img
+                        class="infoImg"
+                        src="/{manager.mode.replace(' ', '%20')}.png"
+                        alt="win now or rebuild"
+                    />
+                </div>
+                <div class="infoAnswer">
+                    {manager.mode}
+                </div>
+            {:else}
+                <div class="infoIcon question">
+                    <img
+                        class="infoImg"
+                        src="/managers/question.jpg"
+                        alt="favorite team"
+                    />
+                </div>
+            {/if}
+        </div>
+        <!-- {/if} -->
+    </div>
+</div>
 
 <style>
     .manager {
@@ -129,7 +235,7 @@
         color: #fff;
     }
 
-	@media (max-width: 665px) {
+    @media (max-width: 665px) {
         .name {
             font-size: 0.9em;
             margin-left: 0.5em;
@@ -141,7 +247,7 @@
         }
     }
 
-	@media (max-width: 595px) {
+    @media (max-width: 595px) {
         .manager {
             padding: 0.5em 0;
             margin: 0.3em 0;
@@ -229,62 +335,3 @@
     }
 </style>
 
-<div class="manager" style="{retired ? "background-image: url(/retired.png); background-color: var(--ddd)": ""}" on:click={() => goto(`/manager?manager=${key}`)}>
-    <div class="avatarHolder">
-        <img class="photo" src="{manager.photo}" alt="{manager.name}" />
-        {#if commissioner}
-            <div class="commissionerBadge">
-                <span>C</span>
-            </div>
-        {/if}
-    </div>
-    <div class="name">{manager.name}</div>
-    <div class="team">{getTeamNameFromTeamManagers(leagueTeamManagers, rosterID, year)}</div>
-    <div class="spacer" />
-    <div class="info">
-        <!-- Favorite team (optional) -->
-        <div class="infoSlot infoTeam">
-            {#if manager.favoriteTeam}
-                <div class="infoIcon">
-                    <img class="infoImg" src="https://sleepercdn.com/images/team_logos/nfl/{manager.favoriteTeam}.png" alt="favorite team"/>
-                </div>
-            {:else}
-                <div class="infoIcon question">
-                    <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                </div>
-            {/if}
-        </div>
-        <!-- Preferred contact -->
-        <div class="infoSlot">
-            {#if manager.preferredContact}
-                <div class="infoIcon">
-                    <img class="infoImg" src="/{manager.preferredContact}.png" alt="{manager.preferredContact}"/>
-                </div>
-                <div class="infoAnswer">
-                    {manager.preferredContact}
-                </div>
-            {:else}
-                <div class="infoIcon question">
-                    <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                </div>
-            {/if}
-        </div>
-        <!-- Rebuild mode (optional and only displayed for dynasty leagues) -->
-        {#if dynasty}
-            <div class="infoSlot infoRebuild">
-                {#if manager.mode}
-                    <div class="infoIcon">
-                        <img class="infoImg" src="/{manager.mode.replace(' ', '%20')}.png" alt="win now or rebuild"/>
-                    </div>
-                    <div class="infoAnswer">
-                        {manager.mode}
-                    </div>
-                {:else}
-                    <div class="infoIcon question">
-                        <img class="infoImg" src="/managers/question.jpg" alt="favorite team"/>
-                    </div>
-                {/if}
-            </div>
-        {/if}
-    </div>
-</div>

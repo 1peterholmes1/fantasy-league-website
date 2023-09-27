@@ -1,6 +1,121 @@
 <script>
+    import { urlForImage } from "$lib/utils/sanity";
+
     export let viewManager, players, changeManager;
 </script>
+
+<div class="fantasyInfos">
+    <!-- Rookies or Vets (optional) -->
+    {#if viewManager.rookieOrVets}
+        <div class="infoSlot">
+            <div class="infoLabel">Rookie or Vet Preference</div>
+            <div class="infoIcon">
+                <img
+                    class="rookiesOrVets"
+                    src="/{viewManager.rookieOrVets}.png"
+                    alt="rookie or vet preference"
+                />
+            </div>
+            <div class="infoAnswer">
+                {viewManager.rookieOrVets}
+            </div>
+        </div>
+    {/if}
+    <!-- Favorite fantasy position (optional) -->
+    {#if viewManager.valuePosition}
+        <div class="infoSlot">
+            <div class="infoLabel">Favorite Fantasy Asset</div>
+            <div class="infoIcon {viewManager.valuePosition}">
+                <span class="valuePosition">{viewManager.valuePosition}</span>
+            </div>
+        </div>
+    {/if}
+    {#if viewManager.tradingScale}
+        <!-- Trading Scale -->
+        <div class="infoSlot">
+            <div class="infoLabel">Desire to Trade</div>
+            <div class="infoIcon">
+                <span class="tradingScale">{viewManager.tradingScale}</span>
+            </div>
+            <div class="infoAnswer">
+                {viewManager.tradingScale} out of 10
+            </div>
+        </div>
+    {/if}
+    <!-- Favorite player (optioonal) -->
+    {#if viewManager.favoritePlayer}
+        <div class="infoSlot">
+            <div class="infoLabel">Favorite Player</div>
+            <div class="infoIcon playerIcon">
+                <img
+                    class="favoritePlayer"
+                    src="https://sleepercdn.com/content/nfl/players/{viewManager.favoritePlayer}.jpg"
+                    alt="favorite player"
+                />
+            </div>
+            <div class="infoAnswer">
+                {players[viewManager.favoritePlayer].fn}
+                {players[viewManager.favoritePlayer].ln}
+            </div>
+        </div>
+    {/if}
+    <!-- Rebuild Mod (optional) -->
+    {#if viewManager.mode}
+        <div class="infoSlot">
+            <div class="infoLabel">Win Now or Rebuild?</div>
+            <div class="infoIcon">
+                <img
+                    class="rebuildOrWin"
+                    src="/{viewManager.mode.replace(' ', '%20')}.png"
+                    alt="win now or rebuild"
+                />
+            </div>
+            <div class="infoAnswer">
+                {viewManager.mode}
+            </div>
+        </div>
+    {/if}
+    <!-- Rival -->
+    {#if viewManager.isCustomFantasyRival != null && viewManager.isCustomFantasyRival}
+        <div class="infoSlot infoRival">
+            <div class="infoLabel">Rival</div>
+            <div class="infoIcon">
+                {#if viewManager.fantasyCustomRival?.customFantasyRivalImage}
+                    <img
+                        class="rival"
+                        src={urlForImage(
+                            viewManager.fantasyCustomRival
+                                .customFantasyRivalImage.asset
+                        )}
+                        alt="rival"
+                    />
+                {/if}
+            </div>
+            <div class="infoAnswer">
+                {viewManager.fantasyCustomRival?.customFantasyRivalName}
+            </div>
+        </div>
+    {:else if viewManager.isCustomFantasyRival == false && viewManager.fantasyTeamRival}
+        <!-- TODO: Change to button -->
+        <div class="infoSlot infoRival" on:click={() => changeManager()}>
+            <div class="infoLabel">Rival</div>
+            <div class="infoIcon">
+                {#if viewManager.fantasyTeamRival?.image}
+                    <img
+                        class="rival"
+                        src={urlForImage(
+                            viewManager.fantasyTeamRival.image?.asset
+                        )}
+                        alt="rival"
+                    />
+                {/if}
+            </div>
+            <div class="infoAnswer">
+                {viewManager.fantasyTeamRival?.name}
+            </div>
+        </div>
+    {/if}
+</div>
 
 <style>
     .fantasyInfos {
@@ -30,11 +145,11 @@
         border: 1px solid var(--ccc);
         overflow: hidden;
         background-color: var(--fff);
-		transition: box-shadow 0.4s;
+        transition: box-shadow 0.4s;
     }
 
     .playerIcon {
-        align-items:flex-end;
+        align-items: flex-end;
     }
 
     .infoLabel {
@@ -168,84 +283,3 @@
     }
 </style>
 
-<div class="fantasyInfos">
-    <!-- Rookies or Vets (optional) -->
-    {#if viewManager.rookieOrVets}
-        <div class="infoSlot">
-            <div class="infoLabel">
-                Rookie or Vet Preference
-            </div>
-            <div class="infoIcon">
-                <img class="rookiesOrVets" src="/{viewManager.rookieOrVets}.png" alt="rookie or vet preference"/>
-            </div>
-            <div class="infoAnswer">
-                {viewManager.rookieOrVets}
-            </div>
-        </div>
-    {/if}
-    <!-- Favorite fantasy position (optional) -->
-    {#if viewManager.valuePosition}
-        <div class="infoSlot">
-            <div class="infoLabel">
-                Favorite Fantasy Asset
-            </div>
-            <div class="infoIcon {viewManager.valuePosition}">
-                <span class="valuePosition">{viewManager.valuePosition}</span>
-            </div>
-        </div>
-    {/if}
-    {#if viewManager.tradingScale}
-        <!-- Trading Scale -->
-        <div class="infoSlot">
-            <div class="infoLabel">
-                Desire to Trade
-            </div>
-            <div class="infoIcon">
-                <span class="tradingScale">{viewManager.tradingScale}</span>
-            </div>
-            <div class="infoAnswer">
-                {viewManager.tradingScale} out of 10
-            </div>
-        </div>
-    {/if}
-    <!-- Favorite player (optioonal) -->
-    {#if viewManager.favoritePlayer}
-        <div class="infoSlot">
-            <div class="infoLabel">
-                Favorite Player
-            </div>
-            <div class="infoIcon playerIcon">
-                <img class="favoritePlayer" src="https://sleepercdn.com/content/nfl/players/{viewManager.favoritePlayer}.jpg" alt="favorite player"/>
-            </div>
-            <div class="infoAnswer">
-                {players[viewManager.favoritePlayer].fn} {players[viewManager.favoritePlayer].ln}
-            </div>
-        </div>
-    {/if}
-    <!-- Rebuild Mod (optional) -->
-    {#if viewManager.mode}
-        <div class="infoSlot">
-            <div class="infoLabel">
-                Win Now or Rebuild?
-            </div>
-            <div class="infoIcon">
-                <img class="rebuildOrWin" src="/{viewManager.mode.replace(' ', '%20')}.png" alt="win now or rebuild"/>
-            </div>
-            <div class="infoAnswer">
-                {viewManager.mode}
-            </div>
-        </div>
-    {/if}
-    <!-- Rival -->
-    <div class="infoSlot infoRival" on:click={() => changeManager(viewManager.rival.link)}>
-        <div class="infoLabel">
-            Rival
-        </div>
-        <div class="infoIcon">
-            <img class="rival" src="{viewManager.rival.image}" alt="rival"/>
-        </div>
-        <div class="infoAnswer">
-            {viewManager.rival.name}
-        </div>
-    </div>
-</div>
