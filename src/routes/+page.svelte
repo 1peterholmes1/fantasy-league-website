@@ -8,9 +8,9 @@
         getLeagueTeamManagers,
         homepageText,
         gotoManager,
-        enableBlog,
         waitForAll,
         getManagersData,
+        getNewestPost,
     } from "$lib/utils/helper";
     import { Transactions, PowerRankings, HomePost } from "$lib/components";
     import {
@@ -18,6 +18,7 @@
         getTeamFromTeamManagers,
     } from "$lib/utils/helperFunctions/universalFunctions";
 
+    const post = getNewestPost();
     const nflState = getNflState();
     const podiumsData = getAwards();
     const leagueTeamManagersData = getLeagueTeamManagers();
@@ -31,9 +32,7 @@
             <!-- homepageText contains the intro text for your league, this gets edited in /src/lib/utils/leagueInfo.js -->
             {@html homepageText}
             <!-- Most recent Blog Post (if enabled) -->
-            {#if enableBlog}
-                <HomePost />
-            {/if}
+            <HomePost postData={post} />
         </div>
         <PowerRankings />
     </div>
@@ -68,7 +67,7 @@
             {:then [podiums, leagueTeamManagers, managers]}
                 {#if podiums[0]}
                     <h4>{podiums[0].year} Fantasy Champ</h4>
-                    <div
+                    <button
                         id="champ"
                         on:click={() => {
                             if (managers.length)
@@ -90,8 +89,8 @@
                             alt="champion"
                         />
                         <img src="/laurel.png" class="laurel" alt="laurel" />
-                    </div>
-                    <span
+                    </button>
+                    <button
                         class="label"
                         on:click={() =>
                             gotoManager({
@@ -104,7 +103,7 @@
                             leagueTeamManagers,
                             podiums[0].champion,
                             podiums[0].year
-                        ).name}</span
+                        ).name}</button
                     >
                 {:else}
                     <p class="center">No former champs.</p>

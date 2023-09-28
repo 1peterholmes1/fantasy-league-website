@@ -20,4 +20,15 @@ export const urlForImage = (source) => {
   return builder.image(source)
 }
 
+export const getBlogPosts = async () => {
+  const query = '*[_type == "fantasyWriteup"]{..., author->} | order(date desc)'
+  const posts = client.fetch(query)
+  return posts
+}
+
+export const getNewestPost = async () => {
+  const query = '*[_type == "fantasyWriteup"]{..., author->} | order(date desc)[0]'
+  const post = client.fetch(query)
+  return post
+}
 

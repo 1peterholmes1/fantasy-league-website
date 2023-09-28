@@ -5,9 +5,13 @@
     import LinearProgress from "@smui/linear-progress";
     import { onMount } from "svelte";
     import Post from "./Post.svelte";
-    import { browser } from '$app/environment';
+    import { browser } from "$app/environment";
 
-    export let postsData, leagueTeamManagersData, queryPage = 1, filterKey = '';
+    export let postsData,
+        leagueTeamManagersData,
+        managersData,
+        queryPage = 1,
+        filterKey = "";
 
     let page = queryPage - 1;
 
@@ -17,70 +21,128 @@
     let allPosts = [];
     let posts = [];
     let leagueTeamManagers = {};
+    let managers;
 
     let categories;
 
     const filterPosts = (ap, fk) => {
-        if(ap.length && fk != '') {
-            posts = ap.filter(p => p.fields.type == fk);
+        if (ap.length && fk != "") {
+            posts = ap.filter((p) => p.type == fk);
         } else {
             posts = ap;
         }
-    }
+    };
 
     const changeFilter = (fk) => {
         page = 0;
         filterKey = fk;
-    }
+    };
 
     $: filterPosts(allPosts, filterKey);
 
-    onMount(async ()=> {
-        const [startPostData, leagueTeamManagersResp] = await waitForAll(postsData, leagueTeamManagersData);
+    onMount(async () => {
+        const [
+            startPostData,
+            leagueTeamManagersResp,
+            managers,
+        ] = await waitForAll(postsData, leagueTeamManagersData, managersData);
         leagueTeamManagers = leagueTeamManagersResp;
         allPosts = startPostData.posts;
         loading = false;
 
         const categoryMap = new Set();
-        for(const post of startPostData.posts) {
-            categoryMap.add(post.fields.type);
+        for (const post of startPostData.posts) {
+            categoryMap.add(post.type);
         }
         categories = [...categoryMap];
 
-        if(!startPostData.fresh) {
+        if (!startPostData.fresh) {
             const blogResponse = await getBlogPosts(null, true);
             allPosts = blogResponse.posts;
             const categoryMap = new Set();
-            for(const post of blogResponse.posts) {
-                categoryMap.add(post.fields.type);
+            for (const post of blogResponse.posts) {
+                categoryMap.add(post.type);
             }
             categories = [...categoryMap];
         }
-    })
+    });
 
     const perPage = 10;
     $: total = posts.length;
 
     let el;
-    $: top = el?.getBoundingClientRect() ? el?.getBoundingClientRect().bottom  : 0
+    $: top = el?.getBoundingClientRect()
+        ? el?.getBoundingClientRect().bottom
+        : 0;
 
     $: displayPosts = posts.slice(page * perPage, (page + 1) * perPage);
+    console.log(displayPosts);
 
     let direction = 1;
 
     const changePage = (dest) => {
         if (browser) {
-            if(dest + 1 > queryPage) {
+            if (dest + 1 > queryPage) {
                 direction = 1;
             } else {
                 direction = -1;
             }
-            goto(`/blog?page=${dest + 1}&filter=${filterKey}`, {noscroll: true,  keepfocus: true});
+            goto(`/blog?page=${dest + 1}&filter=${filterKey}`, {
+                noscroll: true,
+                keepfocus: true,
+            });
         }
-    }
+    };
 
-	$: changePage(page);
+    $: changePage(page);
 </script>
+
+<h2 bind:this={el}>{leagueName} Blog</h2>
+
+{#if loading}
+    <div class="loading">
+        <p>Loading league blog posts...</p>
+        <LinearProgress indeterminate />
+    </div>
+{:else}
+    <div class="filterButtons">
+        {#if filterKey == ""}
+            {#each categories as category}
+                <a
+                    class="noUnderline"
+                    on:click={() => changeFilter(category)}
+                    href="/blog?filter={category}&page=1"
+                    ><div class="filter filterLink">{category}</div></a
+                >
+            {/each}
+        {:else}
+            <div class="filteringBy">
+                Showing <div class="filter filterLink noHover">{filterKey}</div>
+                posts<a
+                    class="noUnderline"
+                    on:click={() => changeFilter("")}
+                    href="/blog?filter=&page=1"
+                    ><div class="filter filterClear">Clear Filter</div></a
+                >
+            </div>
+        {/if}
+    </div>
+
+    <Pagination {perPage} {total} bind:page target={top} scroll={false} />
+
+    {#each displayPosts as post}
+        {#key post.slug.current}
+            <Post
+                createdAt={post.date}
+                {post}
+                id={post.slug.current}
+                {direction}
+                {managers}
+            />
+        {/key}
+    {/each}
+    <Pagination {perPage} {total} bind:page target={top} scroll={true} />
+{/if}
 
 <style>
     h2 {
@@ -88,14 +150,14 @@
         text-align: center;
         margin-bottom: 0.2em;
     }
-	.loading {
-		display: block;
-		position: relative;
-		z-index: 1;
-		width: 85%;
-		max-width: 500px;
-		margin: 80px auto;
-	}
+    .loading {
+        display: block;
+        position: relative;
+        z-index: 1;
+        width: 85%;
+        max-width: 500px;
+        margin: 80px auto;
+    }
     .filter {
         display: inline-flex;
         color: #fff;
@@ -140,31 +202,3 @@
         font-size: 1em;
     }
 </style>
-
-<h2 bind:this={el}>{leagueName} Blog</h2>
-
-{#if loading}
-    <div class="loading" >
-        <p>Loading league blog posts...</p>
-        <LinearProgress indeterminate />
-    </div>
-{:else}
-    <div class="filterButtons">
-        {#if filterKey == ''}
-            {#each categories as category}
-                <a class="noUnderline" on:click={() => changeFilter(category)} href="/blog?filter={category}&page=1"><div class="filter filterLink">{category}</div></a>
-            {/each}
-        {:else}
-            <div class="filteringBy">Showing <div class="filter filterLink noHover">{filterKey}</div> posts <a class="noUnderline" on:click={() => changeFilter('')} href="/blog?filter=&page=1"><div class="filter filterClear">Clear Filter</div></a></div>
-        {/if}
-    </div>
-
-    <Pagination {perPage} {total} bind:page={page} target={top} scroll={false} />
-
-    {#each displayPosts as post}
-        {#key post.sys.id}
-        <Post {leagueTeamManagers} createdAt={post.sys.createdAt} post={post.fields} id={post.sys.id} {direction} />
-        {/key}
-    {/each}
-    <Pagination {perPage} {total} bind:page={page} target={top} scroll={true} />
-{/if}

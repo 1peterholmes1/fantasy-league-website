@@ -1,11 +1,12 @@
 <script>
-	import LinearProgress from '@smui/linear-progress';
-    import { generateParagraph } from "$lib/utils/helper";
+    import LinearProgress from "@smui/linear-progress";
+    // import { generateParagraph } from "$lib/utils/helper";
     import { onMount } from "svelte";
     import Comments from "./Comments.svelte";
-	import AuthorAndDate from './AuthorAndDate.svelte';
+    import AuthorAndDate from "./AuthorAndDate.svelte";
+    import { PortableText } from "@portabletext/svelte";
 
-    export let leagueTeamManagersData, postsData, postID;
+    export let postsData, postID, managersData;
 
     let createdAt, id;
 
@@ -15,38 +16,84 @@
 
     let loadingComments = true;
     let total, comments;
+    let managers;
 
-    onMount(async()=> {
-        const post = postsData.posts.filter(p => p.sys.id === postID)[0];
-        id = post.sys.id;
+    onMount(async () => {
+        const post = postsData.posts.filter(
+            (p) => p.slug.current === postID
+        )[0];
+        id = post.slug.current;
 
-        if(post != null) {
-            createdAt = post.sys.createdAt;
-            ({title, body, type, author} = post.fields);
-            if(!title) {
-                console.error('Invalid post: No title provided');
-            } else if(!body) {
-                console.error(`Invalid post (${title}): No body provided`)
-            } else if(!type) {
-                console.error(`Invalid post (${title}): No type provided`)
-            } else if(!author) {
-                console.error(`Invalid post (${title}): No author provided`)
+        managers = await managersData;
+
+        if (post != null) {
+            createdAt = post.date;
+            ({ title, body, type, author } = post);
+            if (!title) {
+                console.error("Invalid post: No title provided");
+            } else if (!body) {
+                console.error(`Invalid post (${title}): No body provided`);
+            } else if (!type) {
+                console.error(`Invalid post (${title}): No type provided`);
+            } else if (!author) {
+                console.error(`Invalid post (${title}): No author provided`);
             } else {
                 safePost = true;
             }
         }
         loading = false;
 
-        const res = await fetch(`/api/getBlogComments/${id}`, {compress: true});
-        const commentsData = await res.json();
-
-        total = commentsData.total;
-        comments = [...commentsData.items].sort((a, b) => Date.parse(a.sys.createdAt) - Date.parse(b.sys.createdAt));
-        loadingComments = false;
+        // const res = await fetch(`/api/getBlogComments/${id}`, {
+        //     compress: true,
+        // });
+        // const commentsData = await res.json();
+        //
+        // total = commentsData.total;
+        // comments = [...commentsData.items].sort(
+        //     (a, b) => Date.parse(a.sys.createdAt) - Date.parse(b.sys.createdAt)
+        // );
+        // loadingComments = false;
     });
 
     const duration = 300;
 </script>
+
+<!--
+    Some users if they've misconfigured their blog can crash their page
+    (bug https://github.com/nmelhado/league-page/issues/141)
+    This if check makes blog enablement more flexible
+-->
+
+{#if loading}
+    <!-- promise is pending -->
+    <div class="loading">
+        <p>Loading Blog Post...</p>
+        <LinearProgress indeterminate />
+    </div>
+{:else if safePost}
+    <div class="post">
+        <h3>{title}</h3>
+
+        <div class="body">
+            <PortableText class="article-padding" value={body} />
+        </div>
+
+        <hr class="divider" />
+
+        <AuthorAndDate {type} {author} {createdAt} {managers} />
+
+        <!-- display comments -->
+        <!-- {#if !loadingComments} -->
+        <!--     <hr class="divider commentDivider" /> -->
+        <!--     <Comments -->
+        <!--         leagueTeamManagers={leagueTeamManagersData} -->
+        <!--         {comments} -->
+        <!--         {total} -->
+        <!--         postID={id} -->
+        <!--     /> -->
+        <!-- {/if} -->
+    </div>
+{/if}
 
 <style>
     .post {
@@ -62,6 +109,10 @@
         font-size: 2em;
         text-align: center;
         margin: 0;
+    }
+
+    .body {
+        padding: 0 2em 0 2em;
     }
 
     :global(.body blockquote) {
@@ -142,7 +193,7 @@
     :global(.body table) {
         margin: 1em 2em;
         min-width: 80%;
-	    border: 1px solid var(--ddd);
+        border: 1px solid var(--ddd);
         border-collapse: collapse;
     }
 
@@ -152,7 +203,7 @@
 
     :global(.body td) {
         padding: 0.5em 0;
-	    text-align:center;
+        text-align: center;
     }
 
     :global(.body th) {
@@ -162,17 +213,16 @@
     }
 
     .divider {
-        border:0;
-        margin:0;
-        width:100%;
-        height:1px;
+        border: 0;
+        margin: 0;
+        width: 100%;
+        height: 1px;
         background: var(--ddd);
         margin-bottom: 1em;
     }
 
     .commentDivider {
         margin: 1em 0 0;
-
     }
 
     :global(.authorAndDate a) {
@@ -186,38 +236,3 @@
         margin: 80px auto;
     }
 </style>
-
-<!--
-    Some users if they've misconfigured their blog can crash their page
-    (bug https://github.com/nmelhado/league-page/issues/141)
-    This if check makes blog enablement more flexible
--->
-
-{#if loading}
-    <!-- promise is pending -->
-    <div class="loading">
-        <p>Loading Blog Post...</p>
-        <LinearProgress indeterminate />
-    </div>
-{:else if safePost}
-    <div class="post">
-        <h3>{title}</h3>
-
-        <div class="body">
-            {#each body.content as paragraph}
-                {@html generateParagraph(paragraph)}
-            {/each}
-        </div>
-
-        <hr class="divider" />
-
-        <AuthorAndDate {type} leagueTeamManagers={leagueTeamManagersData} {author} {createdAt} />
-
-        <!-- display comments -->
-        {#if !loadingComments}
-            <hr class="divider commentDivider" />
-            <Comments leagueTeamManagers={leagueTeamManagersData} {comments} {total} postID={id} />
-        {/if}
-
-    </div>
-{/if}

@@ -1,44 +1,29 @@
 <script>
-    import { onMount } from "svelte";
-	import LinearProgress from '@smui/linear-progress';
+    import LinearProgress from "@smui/linear-progress";
     import Post from "./Post.svelte";
-    import { getBlogPosts, getLeagueTeamManagers, waitForAll } from "$lib/utils/helper";
+    import { getManagersData, waitForAll } from "$lib/utils/helper";
 
-    const lang = "en-US";
+    export let postData;
 
-    let post;
-    let createdAt;
-    let id;
-    let loading = true;
-    let leagueTeamManagers = {};
-
-    onMount(async() => {
-        const [{posts, fresh}, leagueTeamManagersData] = await waitForAll(getBlogPosts(null), getLeagueTeamManagers());
-		leagueTeamManagers = leagueTeamManagersData;
-        for(const singlePost of posts) {
-            if(singlePost.fields.featured) {
-                createdAt = singlePost.sys.createdAt;
-                post = singlePost.fields;
-                id = singlePost.sys.id;
-                break;
-            }
-        }
-
-        if(!fresh) {
-		    const {posts} = await getBlogPosts(null, true);
-            for(const singlePost of posts) {
-                if(singlePost.fields.featured) {
-                    createdAt = singlePost.sys.createdAt;
-                    post = singlePost.fields;
-                    id = singlePost.sys.id;
-                    break;
-                }
-            }
-        }
-        
-        loading = false;
-    })
+    let managersData = getManagersData();
 </script>
+
+{#await waitForAll(managersData, postData)}
+    <!-- promise is pending -->
+    <div class="loading">
+        <p>Loading Blog Posts...</p>
+        <LinearProgress indeterminate />
+    </div>
+{:then [managers, post]}
+    <h2>Most Recent Blog Post</h2>
+    <Post {post} createdAt={post.date} id={post.slug.current} {managers} />
+    <div class="center">
+        <a class="viewAll" href="/blog">View More Blog Posts</a>
+    </div>
+{:catch error}
+    {@debug error}
+    <div>Error Loading Blog</div>
+{/await}
 
 <style>
     .loading {
@@ -71,17 +56,3 @@
         background-color: #670404;
     }
 </style>
-
-{#if loading}
-    <!-- promise is pending -->
-    <div class="loading">
-        <p>Loading Blog Posts...</p>
-        <LinearProgress indeterminate />
-    </div>
-{:else}
-    <h2>League Blog</h2>
-    <Post {leagueTeamManagers} {post} {createdAt} {id} />
-    <div class="center">
-        <a class="viewAll" href="/blog">View More Blog Posts</a>
-    </div>
-{/if}

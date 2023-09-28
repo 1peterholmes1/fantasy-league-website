@@ -1,23 +1,30 @@
 <script>
-    import { generateParagraph } from "$lib/utils/helper";
+    // import { generateParagraph } from "$lib/utils/helper";
     import { fly } from "svelte/transition";
-	import AuthorAndDate from "./AuthorAndDate.svelte";
+    import AuthorAndDate from "./AuthorAndDate.svelte";
+    import { PortableText } from "@portabletext/svelte";
 
-    export let leagueTeamManagers, post, createdAt, id = null, direction = 1;
+    export let managers,
+        post,
+        createdAt,
+        id = null,
+        direction = 1;
 
     let safePost = false;
-    let title, body, type, author;
+    let title, body, type, author, week, year, date;
 
-    if(post != null) {
-        ({title, body, type, author} = post);
-        if(!title) {
-            console.error('Invalid post: No title provided');
-        } else if(!body) {
-            console.error(`Invalid post (${title}): No body provided`)
-        } else if(!type) {
-            console.error(`Invalid post (${title}): No type provided`)
-        } else if(!author) {
-            console.error(`Invalid post (${title}): No author provided`)
+    if (post != null) {
+        ({ title, body, type, author, week, date, year } = post);
+        if (!title) {
+            console.error("Invalid post: No title provided");
+        } else if (!body) {
+            console.error(`Invalid post (${title}): No body provided`);
+        } else if (!type) {
+            console.error(`Invalid post (${title}): No type provided`);
+        } else if (!author) {
+            console.error(`Invalid post (${title}): No author provided`);
+        } else if (!date || !week || !year) {
+            console.error("Invalid post");
         } else {
             safePost = true;
         }
@@ -29,6 +36,50 @@
 
     $: isOverflown = e ? e.scrollHeight > e.clientHeight : false;
 </script>
+
+<!--
+    Some users if they've misconfigured their blog can crash their page
+    (bug https://github.com/nmelhado/league-page/issues/141)
+    This if check makes blog enablement more flexible
+-->
+{#if safePost}
+    {#key id}
+        <div
+            in:fly={{ delay: duration, duration: duration, x: 150 * direction }}
+            out:fly={{ delay: 0, duration: duration, x: -150 * direction }}
+            class="post"
+        >
+            <div class="title-block">
+                <small>
+                    Week {week} of the {year} season
+                </small>
+                <h3>{title}</h3>
+            </div>
+
+            <div
+                class="body"
+                bind:this={e}
+                style="padding-bottom: {isOverflown ? '3em' : '0'}"
+            >
+                <PortableText value={body} />
+                {#if isOverflown}
+                    <div class="fade">
+                        <div class="fadeTop" />
+                        <div class="fadeBottom" />
+                    </div>
+                {/if}
+            </div>
+
+            <div class="viewFull">
+                <a class="button" href="/blog/{id}">View Full Post</a>
+            </div>
+
+            <hr class="divider" />
+
+            <AuthorAndDate {type} {author} {createdAt} {managers} />
+        </div>
+    {/key}
+{/if}
 
 <style>
     .post {
@@ -44,6 +95,14 @@
         font-size: 2em;
         text-align: center;
         margin: 0;
+    }
+
+    .title-block {
+        text-align: center;
+    }
+
+    .body {
+        padding: 0 2em 0 2em;
     }
 
     .button {
@@ -128,7 +187,7 @@
     :global(.body table) {
         margin: 1em 2em;
         min-width: 80%;
-	    border: 1px solid var(--ddd);
+        border: 1px solid var(--ddd);
         border-collapse: collapse;
     }
 
@@ -138,7 +197,7 @@
 
     :global(.body td) {
         padding: 0.5em 0;
-	    text-align:center;
+        text-align: center;
     }
 
     :global(.body th) {
@@ -148,10 +207,10 @@
     }
 
     .divider {
-        border:0;
-        margin:0;
-        width:100%;
-        height:1px;
+        border: 0;
+        margin: 0;
+        width: 100%;
+        height: 1px;
         background: var(--ddd);
         margin-bottom: 1em;
     }
@@ -172,7 +231,11 @@
     .fadeTop {
         height: 2em;
         width: 100%;
-        background-image: linear-gradient(to bottom, var(--fffTransparent), var(--fff));
+        background-image: linear-gradient(
+            to bottom,
+            var(--fffTransparent),
+            var(--fff)
+        );
     }
 
     .fadeBottom {
@@ -185,36 +248,3 @@
         padding: 0.2em 2em 1em;
     }
 </style>
-
-<!--
-    Some users if they've misconfigured their blog can crash their page
-    (bug https://github.com/nmelhado/league-page/issues/141)
-    This if check makes blog enablement more flexible
--->
-{#if safePost}
-    {#key id}
-        <div in:fly={{delay: duration, duration: duration, x: 150 * direction}} out:fly={{delay: 0, duration: duration, x: -150 * direction}} class="post">
-            <h3>{title}</h3>
-
-            <div class="body" bind:this={e} style="padding-bottom: {isOverflown ? '3em' : '0'}">
-                {#each body.content as paragraph}
-                    {@html generateParagraph(paragraph)}
-                {/each}
-                {#if isOverflown}
-                    <div class="fade">
-                        <div class="fadeTop" />
-                        <div class="fadeBottom" />
-                    </div>
-                {/if}
-            </div>
-            
-            <div class="viewFull">
-                <a class="button" href="/blog/{id}">View Full Post</a>
-            </div>
-
-            <hr class="divider" />
-
-            <AuthorAndDate {type} {leagueTeamManagers} {author} {createdAt} />
-        </div>
-    {/key}
-{/if}

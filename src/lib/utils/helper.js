@@ -15,7 +15,7 @@ import { getAwards } from './helperFunctions/leagueAwards'
 import { cleanName, round, generateGraph, getTeamFromTeamManagers, gotoManager, getAuthor, parseDate, getAvatar } from './helperFunctions/universalFunctions';
 import { predictScores } from './helperFunctions/predictOptimalScore';
 import { getBrackets } from './helperFunctions/leagueBrackets';
-import { getBlogPosts, generateParagraph } from './helperFunctions/getBlogPosts';
+import { getBlogPosts, getNewestPost } from './helperFunctions/getBlogPosts';
 import { getLeagueStandings } from './helperFunctions/leagueStandings';
 
 export {
@@ -23,6 +23,7 @@ export {
     homepageText,
     gotoManager,
     getManagersData,
+    getNewestPost,
     getLeagueData,
     getLeagueTransactions,
     getNflState,
@@ -47,7 +48,6 @@ export {
     getBrackets,
     generateGraph,
     getBlogPosts,
-    generateParagraph,
     predictScores,
     getLeagueStandings,
     getAuthor,

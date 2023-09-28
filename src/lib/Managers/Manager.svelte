@@ -242,6 +242,12 @@
             <h3>Team Philosophy</h3>
             <p class="philosophy">{@html viewManager.philosophy}</p>
         {/if}
+
+        {#if viewManager.favLeagueMoment}
+            <!-- favorite moment is an optional field -->
+            <h3>Favorite League Moment</h3>
+            <p class="philosophy">{@html viewManager.favLeagueMoment}</p>
+        {/if}
     </div>
 
     {#if !loading}

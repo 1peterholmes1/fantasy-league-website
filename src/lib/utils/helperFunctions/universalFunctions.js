@@ -82,7 +82,7 @@ export const gotoManager = ({ leagueTeamManagers, managerID, rosterID, year, man
 
 export const getAuthor = (leagueTeamManagers, author, managersObj) => {
     for (const userID in leagueTeamManagers.users) {
-        if (leagueTeamManagers.users[userID].user_name.toLowerCase() == author.toLowerCase()) {
+        if (leagueTeamManagers.users[userID].user_name.toLowerCase() == author.name.toLowerCase()) {
             return [`<a href="/manager?manager=${managersObj.findIndex(m => m.managerID == String(userID))}">${leagueTeamManagers.users[userID].display_name}</a>`,]
         }
     }
@@ -91,7 +91,7 @@ export const getAuthor = (leagueTeamManagers, author, managersObj) => {
 
 export const getAvatar = (leagueTeamManagers, author) => {
     for (const uID in leagueTeamManagers.users) {
-        if (leagueTeamManagers.users[uID].user_name.toLowerCase() == author.toLowerCase()) {
+        if (leagueTeamManagers.users[uID].user_name.toLowerCase() == author.name.toLowerCase()) {
             return `https://sleepercdn.com/avatars/thumbs/${leagueTeamManagers.users[uID].avatar}`;
         }
     }

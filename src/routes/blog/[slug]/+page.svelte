@@ -2,8 +2,15 @@
     import { FullPost } from "$lib/components";
 
     export let data;
-    const {postsData, postID, leagueTeamManagersData} = data;
+    const { postsData, postID, leagueTeamManagersData, managersData } = data;
 </script>
+
+<div id="main">
+    <FullPost {postsData} {postID} {leagueTeamManagersData} {managersData} />
+    <div class="center">
+        <a class="viewAll" href="/blog">View More Blog Posts</a>
+    </div>
+</div>
 
 <style>
     #main {
@@ -11,8 +18,8 @@
         z-index: 1;
         display: block;
         margin: 30px auto;
-		width: 95%;
-		max-width: 1000px;
+        width: 95%;
+        max-width: 1000px;
         overflow-y: hidden;
     }
 
@@ -30,9 +37,3 @@
     }
 </style>
 
-<div id="main">
-    <FullPost {postsData} {postID} {leagueTeamManagersData} />
-    <div class="center">
-        <a class="viewAll" href="/blog">View More Blog Posts</a>
-    </div>
-</div>
