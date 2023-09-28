@@ -16,6 +16,7 @@
 
     let loadingComments = true;
     let total, comments;
+    let week, year;
     let managers;
 
     onMount(async () => {
@@ -28,7 +29,7 @@
 
         if (post != null) {
             createdAt = post.date;
-            ({ title, body, type, author } = post);
+            ({ title, body, type, author, week, year } = post);
             if (!title) {
                 console.error("Invalid post: No title provided");
             } else if (!body) {
@@ -37,6 +38,8 @@
                 console.error(`Invalid post (${title}): No type provided`);
             } else if (!author) {
                 console.error(`Invalid post (${title}): No author provided`);
+            } else if (!week || !year) {
+                console.error("Invalid post no week or year");
             } else {
                 safePost = true;
             }
@@ -72,7 +75,10 @@
     </div>
 {:else if safePost}
     <div class="post">
-        <h3>{title}</h3>
+        <div class="title-block">
+            <small>Week {week} of the {year} season</small>
+            <h3>{title}</h3>
+        </div>
 
         <div class="body">
             <PortableText class="article-padding" value={body} />
@@ -103,6 +109,10 @@
         color: var(--g333);
         padding: 1.5em 0 1em;
         margin: 2em 0;
+    }
+
+    .title-block {
+        text-align: center;
     }
 
     h3 {
