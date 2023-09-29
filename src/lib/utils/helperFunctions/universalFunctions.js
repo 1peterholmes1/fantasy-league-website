@@ -49,6 +49,7 @@ export const gotoManager = ({ leagueTeamManagers, managerID, rosterID, year, man
     if (managerID) {
         // modern approach
         managersIndex = managersObj.findIndex(m => m.managerID == managerID);
+        console.log(managersIndex)
 
         // support for league pages still using deprecated roster field
         if (managersIndex < 0) {
@@ -56,6 +57,7 @@ export const gotoManager = ({ leagueTeamManagers, managerID, rosterID, year, man
                 for (const mID of leagueTeamManagers.teamManagersMap[year][rID].managers) {
                     if (mID == managerID) {
                         managersIndex = managersObj.findIndex(m => m.roster == rID);
+                        console.log('a')
                         goto(`/manager?manager=${managersIndex}`);
                         return;
                     }
@@ -67,6 +69,7 @@ export const gotoManager = ({ leagueTeamManagers, managerID, rosterID, year, man
         for (const mID of leagueTeamManagers.teamManagersMap[year][rosterID].managers) {
             managersIndex = managersObj.findIndex(m => m.managerID == mID);
             if (managersIndex > -1) {
+                console.log('b')
                 goto(`/manager?manager=${managersIndex}`);
                 return;
             }

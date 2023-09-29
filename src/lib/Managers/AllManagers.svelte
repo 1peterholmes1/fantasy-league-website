@@ -5,7 +5,6 @@
     export let managers, leagueTeamManagers;
 
     let innerWidth;
-    console.log(managers);
 </script>
 
 <svelte:window bind:innerWidth />

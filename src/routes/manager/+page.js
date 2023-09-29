@@ -22,7 +22,7 @@ export async function load({ url }) {
     const manager = url?.searchParams?.get('manager');
 
     const props = {
-        manager: manager && manager < 10 ? manager : -1,
+        manager: manager && manager <= 10 ? manager : -1,
         managersInfo
     }
 

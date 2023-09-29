@@ -1,7 +1,7 @@
 <script>
     import { parseDate } from "$lib/utils/helper";
     import { urlForImage } from "$lib/utils/sanity";
-    import { gotoManager } from "$lib/utils/helperFunctions/universalFunctions";
+    import { goto } from "$app/navigation";
 
     export let type, author, createdAt, managers;
 </script>
@@ -10,7 +10,11 @@
     <div
         class="author-block"
         on:click={() => {
-            gotoManager({ managerID: author.managerID, managersObj: managers });
+            goto(
+                `/manager?manager=${managers.findIndex(
+                    (m) => m.managerID === author.managerID
+                )}`
+            );
         }}
     >
         {#if author.image}
@@ -26,9 +30,9 @@
                 src="/managers/blankManager.png"
             />
         {/if}
-        <span class="author">{author.name} - </span>
+        <span class="author">{author.name}</span>
     </div>
-    <span class="date"><i>{parseDate(createdAt)}</i></span>
+    <span class="date"> - <i>{parseDate(createdAt)}</i></span>
     <div class="filter">
         <a href="/blog?filter={type}&page=1">{type}</a>
     </div>
@@ -45,9 +49,15 @@
     }
 
     .author-block {
-        padding-top: 1em;
-        padding-bottom: 1em;
+        padding: 1em 0.5em 1em 0.5em;
         display: inline;
+        cursor: pointer;
+        border-radius: 1em;
+    }
+
+    .author-block:hover {
+        background-color: var(--g999);
+        color: white;
     }
 
     .authorAndDate {

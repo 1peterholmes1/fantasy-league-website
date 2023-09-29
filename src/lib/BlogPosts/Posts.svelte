@@ -21,7 +21,7 @@
     let allPosts = [];
     let posts = [];
     let leagueTeamManagers = {};
-    let managers;
+    let managers = [];
 
     let categories;
 
@@ -44,11 +44,12 @@
         const [
             startPostData,
             leagueTeamManagersResp,
-            managers,
+            managersd,
         ] = await waitForAll(postsData, leagueTeamManagersData, managersData);
         leagueTeamManagers = leagueTeamManagersResp;
         allPosts = startPostData.posts;
         loading = false;
+        managers = managersd;
 
         const categoryMap = new Set();
         for (const post of startPostData.posts) {
