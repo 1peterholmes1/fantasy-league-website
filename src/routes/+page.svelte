@@ -1,6 +1,6 @@
 <script>
     import LinearProgress from "@smui/linear-progress";
-    import { onMount } from "svelte";
+    import { goto } from "$app/navigation";
     import {
         getNflState,
         leagueName,
@@ -17,6 +17,7 @@
         getAvatarFromTeamManagers,
         getTeamFromTeamManagers,
     } from "$lib/utils/helperFunctions/universalFunctions";
+    import { urlForImage } from "$lib/utils/sanity";
 
     const post = getNewestPost();
     const nflState = getNflState();
@@ -67,43 +68,43 @@
             {:then [podiums, leagueTeamManagers, managers]}
                 {#if podiums[0]}
                     <h4>{podiums[0].year} Fantasy Champ</h4>
-                    <button
+                    <div
                         id="champ"
                         on:click={() => {
                             if (managers.length)
-                                gotoManager({
-                                    year: podiums[0].year,
-                                    leagueTeamManagers,
-                                    rosterID: parseInt(podiums[0].champion),
-                                    managersObj: managers,
-                                });
+                                gotoManager(
+                                    goto(
+                                        `/manager?manager=${podiums[0].champion}`
+                                    )
+                                );
                         }}
                     >
-                        <img
-                            src={getAvatarFromTeamManagers(
-                                leagueTeamManagers,
-                                podiums[0].champion,
-                                podiums[0].year
-                            )}
-                            class="first"
-                            alt="champion"
-                        />
+                        {#if managers[podiums[0].champion].image}
+                            <img
+                                src={urlForImage(
+                                    managers[podiums[0].champion].image.asset
+                                )}
+                                class="first"
+                                alt="champion"
+                            />
+                        {:else}
+                            <img
+                                src="/managers/blankManager.png"
+                                class="first"
+                                alt="champion"
+                            />
+                        {/if}
                         <img src="/laurel.png" class="laurel" alt="laurel" />
-                    </button>
-                    <button
+                    </div>
+                    <span
                         class="label"
                         on:click={() =>
-                            gotoManager({
-                                year: podiums[0].year,
-                                leagueTeamManagers,
-                                rosterID: parseInt(podiums[0].champion),
-                                managersObj: managers,
-                            })}
+                            goto(`/manager?manager=${podiums[0].champion}`)}
                         >{getTeamFromTeamManagers(
                             leagueTeamManagers,
                             podiums[0].champion,
                             podiums[0].year
-                        ).name}</button
+                        ).name}</span
                     >
                 {:else}
                     <p class="center">No former champs.</p>

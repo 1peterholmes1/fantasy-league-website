@@ -49,12 +49,12 @@
             out:fly={{ delay: 0, duration: duration, x: -150 * direction }}
             class="post"
         >
-            <div class="title-block">
+            <a href={`/blog/${post.slug.current}`} class="title-block">
                 <small>
                     Week {week} of the {year} season
                 </small>
                 <h3>{title}</h3>
-            </div>
+            </a>
 
             <div
                 class="body"
@@ -98,7 +98,16 @@
     }
 
     .title-block {
+        display: flex;
+        flex-direction: column;
         text-align: center;
+        font: inherit;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .title-block:hover > h3 {
+        text-decoration: underline;
     }
 
     .body {

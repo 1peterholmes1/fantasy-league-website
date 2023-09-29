@@ -2,6 +2,7 @@
 	import { Awards } from "$lib/components";
 	import { waitForAll } from "$lib/utils/helper";
 	import LinearProgress from "@smui/linear-progress";
+	import { LegacyAwards } from "$lib/components";
 
 	export let data;
 	const { awardsData, teamManagersData, managersData } = data;
@@ -15,7 +16,11 @@
 		</div>
 	{:then [podiums, leagueTeamManagers, managers]}
 		{#each podiums as podium}
-			<Awards {podium} {leagueTeamManagers} {managers} />
+			{#if podium.year < 2023}
+				<LegacyAwards {podium} {managers} />
+			{:else}
+				<Awards {podium} {leagueTeamManagers} {managers} />
+			{/if}
 		{:else}
 			<p class="nothingYet">
 				No seasons have been completed yet, so no awards have been earned...
@@ -53,4 +58,3 @@
 		text-align: center;
 	}
 </style>
-

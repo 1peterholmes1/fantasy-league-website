@@ -1,6 +1,28 @@
 import { writable } from 'svelte/store';
 
-export const awards = writable({});
+export const awards = writable([
+  {
+    year: 2022,
+    champion: 8,
+    second: 9,
+    third: 5,
+    toilet: 4
+  },
+  {
+    year: 2021,
+    champion: 11,
+    second: 7,
+    third: 10,
+    toilet: 0
+  },
+  {
+    year: 2020,
+    champion: 1,
+    second: 7,
+    third: 11,
+    toilet: 2
+  }
+]);
 export const leagueData = writable({});
 export const upcomingDraft = writable({});
 export const previousDrafts = writable([]);

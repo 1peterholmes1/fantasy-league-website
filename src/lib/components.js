@@ -3,6 +3,7 @@ import Footer from './Footer.svelte';
 import News from './News/index.svelte';
 import Resources from './Resources.svelte';
 import Awards from './Awards/Awards.svelte';
+import LegacyAwards from './Awards/LegacyAwards.svelte';
 import Rosters from './Rosters/Rosters.svelte';
 import Rivalry from './Rivalry/index.svelte';
 import Transactions from './Transactions/Transactions.svelte';
@@ -23,6 +24,7 @@ export {
     Nav,
     Footer,
     Awards,
+    LegacyAwards,
     Rosters,
     Rivalry,
     Transactions,

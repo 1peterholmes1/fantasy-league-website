@@ -5,7 +5,7 @@ import { get } from 'svelte/store';
 import { awards } from '$lib/stores';
 
 export const getAwards = async () => {
-	if(get(awards).length) {
+	if (get(awards).length) {
 		return get(awards);
 	}
 	const leagueData = await getLeagueData().catch((err) => { console.error(err); });
@@ -14,7 +14,7 @@ export const getAwards = async () => {
 
 	const podiums = await getPodiums(previousSeasonID);
 
-	awards.update(() => podiums);
+	awards.update((p) => [...p, ...podiums]);
 
 	return podiums;
 }
@@ -22,7 +22,7 @@ export const getAwards = async () => {
 const getPodiums = async (previousSeasonID) => {
 	const podiums = [];
 
-	while(previousSeasonID && previousSeasonID != 0) {
+	while (previousSeasonID && previousSeasonID != 0) {
 		// use the previous season ID to get the previous league, roster, user, and bracket data
 		const previousSeasonData = await getPreviousLeagueData(previousSeasonID);
 
@@ -39,25 +39,25 @@ const getPodiums = async (previousSeasonID) => {
 
 		previousSeasonID = previousSeasonData.previousSeasonID;
 
-		const divisions = buildDivisionsAndManagers({previousRosters, leagueMetadata, numDivisions});
+		const divisions = buildDivisionsAndManagers({ previousRosters, leagueMetadata, numDivisions });
 
 		// add manager to division obj and convert to array
 		const divisionArr = []
-		for(const key in divisions) {
+		for (const key in divisions) {
 			divisionArr.push(divisions[key]);
 		}
 
 		const finalsMatch = winnersData.filter(m => m.r == playoffRounds && m.t1_from.w)[0];
 		const champion = finalsMatch.w;
 		const second = finalsMatch.l;
-	
+
 		const runnersUpMatch = winnersData.filter(m => m.r == playoffRounds && m.t1_from.l)[0];
 		const third = runnersUpMatch.w;
 
 		const toiletBowlMatch = losersData.filter(m => m.r == toiletRounds && (!m.t1_from || m.t1_from.w))[0];
 		const toilet = toiletBowlMatch.w
 
-		if(!champion) {
+		if (!champion) {
 			continue;
 		}
 
@@ -77,15 +77,15 @@ const getPodiums = async (previousSeasonID) => {
 // fetch the previous season's data from sleeper
 const getPreviousLeagueData = async (previousSeasonID) => {
 	const resPromises = [
-		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}`, {compress: true}),
+		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}`, { compress: true }),
 		getLeagueRosters(previousSeasonID),
-		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}/losers_bracket`, {compress: true}),
-		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}/winners_bracket`, {compress: true}),
+		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}/losers_bracket`, { compress: true }),
+		fetch(`https://api.sleeper.app/v1/league/${previousSeasonID}/winners_bracket`, { compress: true }),
 	]
 
 	const [leagueRes, rostersData, losersRes, winnersRes] = await waitForAll(...resPromises).catch((err) => { console.error(err); });
 
-	if(!leagueRes.ok || !losersRes.ok || !winnersRes.ok) {
+	if (!leagueRes.ok || !losersRes.ok || !winnersRes.ok) {
 		throw new Error(data);
 	}
 
@@ -122,10 +122,10 @@ const getPreviousLeagueData = async (previousSeasonID) => {
 }
 
 // determine division champions and construct previousManagers object
-const buildDivisionsAndManagers = ({previousRosters, leagueMetadata, numDivisions}) => {
+const buildDivisionsAndManagers = ({ previousRosters, leagueMetadata, numDivisions }) => {
 	const divisions = {};
 
-	for(let i = 1; i <= numDivisions; i++) {
+	for (let i = 1; i <= numDivisions; i++) {
 		divisions[i] = {
 			name: leagueMetadata ? leagueMetadata[`division_${i}`] : null,
 			wins: -1,
@@ -133,11 +133,11 @@ const buildDivisionsAndManagers = ({previousRosters, leagueMetadata, numDivision
 		}
 	}
 
-	for(const rosterID in previousRosters) {
+	for (const rosterID in previousRosters) {
 		const rSettings = previousRosters[rosterID].settings;
-        const div = !rSettings.division || rSettings.division > numDivisions ? 1 : rSettings.division;
-		if(rSettings.wins > divisions[div].wins || (rSettings.wins == divisions[div].wins && (rSettings.fpts  + rSettings.fpts_decimal / 100)  == divisions[div].points)) {
-			divisions[div].points = rSettings.fpts  + rSettings.fpts_decimal / 100;
+		const div = !rSettings.division || rSettings.division > numDivisions ? 1 : rSettings.division;
+		if (rSettings.wins > divisions[div].wins || (rSettings.wins == divisions[div].wins && (rSettings.fpts + rSettings.fpts_decimal / 100) == divisions[div].points)) {
+			divisions[div].points = rSettings.fpts + rSettings.fpts_decimal / 100;
 			divisions[div].wins = rSettings.wins;
 			divisions[div].rosterID = rosterID;
 		}

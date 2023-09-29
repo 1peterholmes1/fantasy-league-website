@@ -202,6 +202,21 @@ export const getTeamData = (users, ownerID) => {
     }
 }
 
+export const getTeamManagerPhoto = (teamManagers, rosterID, year) => {
+    try {
+        if (!year || year > teamManagers.currentSeason) {
+            year = teamManagers.currentSeason;
+        }
+        let manager = teamManagers.teamManagersMap[year][rosterID].managers[0];
+        if (manager.image) {
+            return urlForImage(manager.image.asset)
+        }
+    } catch (e) {
+        console.error(e)
+    }
+    return 'managers/blankManager.png'
+}
+
 export const getAvatarFromTeamManagers = (teamManagers, rosterID, year) => {
     if (!year || year > teamManagers.currentSeason) {
         year = teamManagers.currentSeason;
@@ -245,12 +260,17 @@ export const getTeamFromTeamManagers = (teamManagers, rosterID, year) => {
 }
 
 export const getNestedTeamNamesFromTeamManagers = (teamManagers, year, rosterID) => {
-    const originalName = teamManagers.teamManagersMap[year][rosterID]['team']['name'];
-    const currentName = teamManagers.teamManagersMap[teamManagers.currentSeason][rosterID]['team']['name'];
-    if (cleanName(originalName) != cleanName(currentName)) {
-        return `${originalName}<div class="curOwner">(${currentName})</div>`;
+    try {
+        const originalName = teamManagers.teamManagersMap[year][rosterID]['team']['name'];
+        const currentName = teamManagers.teamManagersMap[teamManagers.currentSeason][rosterID]['team']['name'];
+        if (cleanName(originalName) != cleanName(currentName)) {
+            return `${originalName}<div class="curOwner">(${currentName})</div>`;
+        }
+        return originalName;
+    } catch (e) {
+        console.error(e)
     }
-    return originalName;
+    return "No Name Found"
 }
 
 export const getDatesActive = (teamManagers, managerID, managers) => {
